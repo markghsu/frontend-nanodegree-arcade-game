@@ -27,6 +27,8 @@ var Engine = (function(global) {
 
     canvas.width = 505;
     canvas.height = 606;
+    ctx.gameWidth = 500;
+    ctx.gameHeight = 550;
     doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
@@ -64,7 +66,7 @@ var Engine = (function(global) {
      * game loop.
      */
     function init() {
-        reset();
+        //reset();
         lastTime = Date.now();
         main();
     }
@@ -109,16 +111,20 @@ var Engine = (function(global) {
          */
         var rowImages = [
                 'images/water-block.png',   // Top row is water
-                'images/stone-block.png',   // Row 1 of 3 of stone
-                'images/stone-block.png',   // Row 2 of 3 of stone
-                'images/stone-block.png',   // Row 3 of 3 of stone
-                'images/grass-block.png',   // Row 1 of 2 of grass
-                'images/grass-block.png'    // Row 2 of 2 of grass
+                'images/stone-block.png',   // Row 1 of 4 of stone
+                'images/stone-block.png',   // Row 2 of 4 of stone
+                'images/stone-block.png',   // Row 3 of 4 of stone
+                'images/stone-block.png',   // Row 4 of 4 of grass
+                'images/grass-block.png'    // Row 1 of 1 of grass
             ],
             numRows = 6,
             numCols = 5,
             row, col;
-
+            //fill with white on top and bottom prior to tiling.
+            ctx.beginPath();
+            ctx.rect(0, 0, 505, 606);
+            ctx.fillStyle = "white";
+            ctx.fill();
         /* Loop through the number of rows and columns we've defined above
          * and, using the rowImages array, draw the correct image for that
          * portion of the "grid"
@@ -159,9 +165,32 @@ var Engine = (function(global) {
      * those sorts of things. It's only called once by the init() method.
      */
     function reset() {
-        // noop
+        characterSelect();
     }
 
+    function characterSelect() {
+        //show characters to choose from
+         //fill with white on top and bottom prior to tiling.
+        ctx.beginPath();
+        ctx.rect(0, 0, 505, 606);
+        ctx.fillStyle = "white";
+        ctx.fill();
+        var charImages = [
+            'images/char-princess-girl.png',
+            'images/char-cat-girl.png',
+            'images/char-horn-girl.png',
+            'images/char-pink-girl.png',
+            'images/char-boy.png'
+            ],
+            numChars = 5;
+        /* Loop through the number of characters and allow selection.
+         */
+        for (var ch = 0; ch < numChars; ch++) {
+            ctx.drawImage(Resources.get(charImages[ch]), 10 + ch * 91, 83);
+        }
+        ctx.drawImage(Resources.get('images/Selector.png'), 0, 160);
+        menuLoop();
+    }
     /* Go ahead and load all of the images we know we're going to need to
      * draw our game level. Then set init as the callback method, so that when
      * all of these images are properly loaded our game will start.
@@ -171,7 +200,19 @@ var Engine = (function(global) {
         'images/water-block.png',
         'images/grass-block.png',
         'images/enemy-bug.png',
-        'images/char-boy.png'
+        'images/char-princess-girl.png',
+        'images/char-cat-girl.png',
+        'images/char-horn-girl.png',
+        'images/char-pink-girl.png',
+        'images/char-boy.png',
+        'images/Gem Blue.png',
+        'images/Gem Green.png',
+        'images/Gem Orange.png',
+        'images/Heart.png',
+        'images/Key.png',
+        'images/Rock.png',
+        'images/Selector.png',
+        'images/Star.png'
     ]);
     Resources.onReady(init);
 
