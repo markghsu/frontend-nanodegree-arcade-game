@@ -79,6 +79,18 @@ var Engine = (function(global) {
         document.addEventListener("startMain",function(e) {
             lastTime = Date.now();
             main();
+            // This listens for key presses and sends the keys to your
+            // Player.handleInput() method. You don't need to modify this.
+            document.addEventListener('keyup', function(e) {
+                var allowedKeys = {
+                    37: 'left',
+                    38: 'up',
+                    39: 'right',
+                    40: 'down'
+                };
+
+                player.handleInput(allowedKeys[e.keyCode]);
+            });
         });
     }
 
@@ -104,7 +116,7 @@ var Engine = (function(global) {
      * render methods.
      */
     function updateEntities(dt) {
-        allEnemies.forEach(function(enemy) {
+        gameState.allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
         player.update();
@@ -139,7 +151,7 @@ var Engine = (function(global) {
         ctx.fill();
         ctx.fillStyle = "black";
         ctx.font = "20px Arial";
-        ctx.fillText("level: " + gameState.level,0,30);
+        ctx.fillText("level: " + (gameState.level + 1),0,30);//zero indexed
         ctx.fillText("lives: " + gameState.lives, 200,30);
         ctx.fillText("points: " + gameState.points, 400,30);
         /* Loop through the number of rows and columns we've defined above
@@ -171,8 +183,11 @@ var Engine = (function(global) {
         /* Loop through all of the objects within the allEnemies array and call
          * the render function you have defined.
          */
-        allEnemies.forEach(function(enemy) {
+        gameState.allEnemies.forEach(function(enemy) {
             enemy.render();
+        });
+        gameState.allPowerups.forEach(function(powerup) {
+            powerup.render();
         });
 
         player.render();
@@ -190,6 +205,7 @@ var Engine = (function(global) {
     function characterSelect() {
         //show characters to choose from
          //fill with white on top and bottom prior to tiling.
+        ctx.save();
         ctx.beginPath();
         ctx.rect(0, 0, 505, 606);
         ctx.fillStyle = "white";
@@ -204,6 +220,7 @@ var Engine = (function(global) {
             ctx.drawImage(Resources.get(charImages[ch]), 10 + ch * 91, 83);
         }
         ctx.drawImage(Resources.get('images/Selector.png'), 10 + charPtr * 91, 160);
+        ctx.restore();
     }
 
     function handleInput(e){
@@ -273,4 +290,5 @@ var Engine = (function(global) {
      * from within their app.js files.
      */
     global.ctx = ctx;
+    global.render = render;
 })(this);

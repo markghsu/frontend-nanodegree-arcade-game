@@ -10,7 +10,7 @@ var gameState = {
 		y: 450
 	},
 	/** @var {number} level - current level */
-	level: 1,
+	level: 0,
 	/** @var {number} lives - current lives, game ends at 0 */
 	lives: 3,
 	/** @var {number} points - current points */
@@ -18,7 +18,9 @@ var gameState = {
 	/** @var {number} gameWidth - width of the game board */
 	gameWidth: 500,
 	/** @var {number} gameHeight - height of the game board, not including the bottom of the tiles*/
-	gameHeight: 550
+	gameHeight: 550,
+	allEnemies: [],
+	allPowerups:[]
 };
 
 /**
@@ -28,17 +30,59 @@ var gameState = {
 var levels = [
 	{
 		enemies: [
+			{x:100,y:200,speed:100},
+			{x:200,y:375,speed:70},
+			{x:0,y:170,speed:180}
 		],
 		powerups: [
+			{type: 0, x: 200, y: 350}
 		],
 		other: [
 		]
 	},
-	{}
-]
+	{
+		enemies: [
+			{x:100,y:360,speed:100},
+			{x:300,y:300,speed:70},
+			{x:0,y:130,speed:180},
+			{x:200,y:300,speed:130},
+			{x:20,y:130,speed:150}
+		],
+		powerups: [
+			{type: 0, x: 100, y: 300}
+		],
+		other: [
+		]
+	}
+];
 
-var allEnemies = [];
-var player = new Player();
+var powerupTypes = [
+	{
+		sprite:'images/Gem Blue.png',
+		life: 0,
+		point: 1
+	},
+	{
+		sprite:'images/Gem Green.png',
+		life: 0,
+		point: 2
+	},
+	{
+		sprite:'images/Gem Orange.png',
+		life: 0,
+		point: 3
+	},
+	{
+		sprite:'images/Heart.png',
+		life: 1,
+		point: 0
+	},
+	{
+		sprite:'images/Key.png',
+		life: 3,
+		point: 2
+	}
+];
 
 /**
  * @description Represents any entity/character that is rendered on screen.
@@ -83,8 +127,7 @@ Entity.prototype.update = function(dt) {
  */
 var Enemy = function(x, y, speed) {
 	if (typeof speed !== 'number') { speed = 100; }
-	Entity.call(this, 'images/enemy-bug.png', x, y, sp, 100, 75);
-	this.speed = sp;
+	Entity.call(this, 'images/enemy-bug.png', x, y, speed, 100, 75);
 };
 
 Enemy.prototype = Object.create(Entity.prototype);
@@ -108,6 +151,24 @@ Enemy.prototype.update = function(dt) {
 	}
 };
 
+/**
+ * @description Powerups that the player tries to get
+ * @constructor
+ * @augments Entity
+ * @param {string} sprite - sprite of powerup
+ * @param {int} x - x position of the powerup in px, relative to canvas (left side)
+ * @param {int} y - y position of the powerup in px, relative to canvas (top side)
+ * @param {int} point - point value received when collecting powerup
+ * @param {int} life - life value received when collecting powerup
+ */
+var Powerup = function(sprite, x, y, point, life) {
+	this.pointVal = point;
+	this.lifeVal = life;
+	Entity.call(this, sprite, x, y, 0, 100, 75);
+};
+
+Powerup.prototype = Object.create(Entity.prototype);
+Powerup.prototype.constructor = Powerup;
 
 /**
  * @description Player character. Initialized with default sprite, speed, start location.
@@ -126,9 +187,16 @@ Player.prototype.constructor = Player;
  */
 Player.prototype.update = function() {
 	//every tick, check collisions
-	for(var i = 0; i < allEnemies.length; i++) {
-		if(intersects(this,allEnemies[i])){
+	for(var i = 0; i < gameState.allEnemies.length; i++) {
+		if(intersects(this, gameState.allEnemies[i])) {
 			this.die();
+		}
+	}
+	for(i = 0; i < gameState.allPowerups.length; i++) {
+		if(intersects(this, gameState.allPowerups[i])) {
+			gameState.points += gameState.allPowerups[i].pointVal;
+			gameState.lives += gameState.allPowerups[i].lifeVal;
+			gameState.allPowerups.pop(i);
 		}
 	}
 	//check for victory
@@ -141,6 +209,7 @@ Player.prototype.update = function() {
  * @method reset level on death, subtract from life total.
  */
 Player.prototype.die = function() {
+	render();
 	this.x = gameState.start.x;
 	this.y = gameState.start.y;
 	gameState.lives--;
@@ -171,10 +240,10 @@ function quit() {
     ctx.font = "45px Arial";
     ctx.fillText("Game Over!",120,200);
     ctx.fillText("Final Score: " + gameState.points, 100, 300);
-    ctx.fillText("Levels Completed: " + (gameState.level - 1), 50, 400);
+    ctx.fillText("Levels Completed: " + gameState.level, 50, 400);
     ctx.strokeText("Game Over!",120,200);
     ctx.strokeText("Final Score: " + gameState.points, 100, 300);
-    ctx.strokeText("Levels Completed: " + (gameState.level - 1), 50, 400);
+    ctx.strokeText("Levels Completed: " + gameState.level, 50, 400);
     ctx.restore();
 }
 
@@ -214,6 +283,7 @@ Player.prototype.handleInput = function(inp) {
 
 /**
  * @method Checks if two entities intersect. Only based on x, y, width, height.
+ * @todo Implement checking based on entity shape
  * @param {Entity} a - first entity
  * @param {Entity} b - second entity
  */
@@ -225,28 +295,36 @@ function intersects (a, b) {
 /**
  * @method Initialize a level
  * @param {Number} num - level to initialize. Currently randomly adds num Enemies on level.
- * @todo Update to read levels from levels global.
  */
 function initLevel(num) {
-	allEnemies = [];
-	if (typeof num !== 'number') { num = 3; }
-	for(var i = 0; i < num; i++) {
-		allEnemies.push(new Enemy(Math.random()*500,Math.random() * 300 + 100, Math.random()*200));
+	gameState.allEnemies = [];
+	gameState.allPowerups = [];
+	if (typeof num !== 'number' || num < 0) {
+		num = 3;
+	}
+	if(levels.length <= num) {
+		//load random enemies
+		for(var i = 0; i < num; i++) {
+			gameState.allEnemies.push(new Enemy(Math.random()*500,Math.random() * 300 + 100, Math.random()*200));
+		}
+	}
+	else {
+		for(var j = 0; j < levels[num].enemies.length; j++) {
+			gameState.allEnemies.push(new Enemy(levels[num].enemies[j].x,levels[num].enemies[j].y, levels[num].enemies[j].speed));
+		}
+		for(var k = 0; k < levels[num].powerups.length; k++) {
+			gameState.allPowerups.push(
+				new Powerup(
+					powerupTypes[levels[num].powerups[k].type].sprite,
+					levels[num].powerups[k].x,
+					levels[num].powerups[k].y,
+					powerupTypes[levels[num].powerups[k].type].point,
+					powerupTypes[levels[num].powerups[k].type].life
+				));
+		}
 	}
 }
 
+var player = new Player();
 //start the game
-initLevel(1);
-
-// This listens for key presses and sends the keys to your
-// Player.handleInput() method. You don't need to modify this.
-document.addEventListener('keyup', function(e) {
-	var allowedKeys = {
-		37: 'left',
-		38: 'up',
-		39: 'right',
-		40: 'down'
-	};
-
-	player.handleInput(allowedKeys[e.keyCode]);
-});
+initLevel(0);
