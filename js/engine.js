@@ -55,7 +55,7 @@ var Engine = (function(global) {
          * our update function since it may be used for smooth animation.
          */
         update(dt);
-        if(gameState.lives <= 0) return;    
+        if(gameState.lives <= 0) return;
         render();
         /* Set our lastTime variable which is used to determine the time delta
          * for the next time this function is called.
@@ -183,12 +183,14 @@ var Engine = (function(global) {
         /* Loop through all of the objects within the allEnemies array and call
          * the render function you have defined.
          */
-        gameState.allEnemies.forEach(function(enemy) {
-            enemy.render();
-        });
         gameState.allPowerups.forEach(function(powerup) {
             powerup.render();
         });
+
+        gameState.allEnemies.forEach(function(enemy) {
+            enemy.render();
+        });
+        
 
         player.render();
     }
@@ -213,13 +215,13 @@ var Engine = (function(global) {
         ctx.fillStyle = "red";
         ctx.font = "30px Arial";
         ctx.fillText("Choose a character (down key):", 0, 30);
-        
+
         /* Loop through the number of characters and allow selection.
          */
         for (var ch = 0; ch < numChars; ch++) {
-            ctx.drawImage(Resources.get(charImages[ch]), 10 + ch * 91, 83);
+            ctx.drawImage(Resources.get(charImages[ch]), ch * 101, 83);
         }
-        ctx.drawImage(Resources.get('images/Selector.png'), 10 + charPtr * 91, 160);
+        ctx.drawImage(Resources.get('images/Selector.png'), charPtr * 101, 160);
         ctx.restore();
     }
 
@@ -236,6 +238,7 @@ var Engine = (function(global) {
                 charPtr = charPtr % 5;
                 break;
             case 40:
+                // if player sprites are different sizes, set bounding box here also.
                 player.sprite = charImages[charPtr];
                 document.removeEventListener('keyup',handleInput);
                 var event;
@@ -269,6 +272,7 @@ var Engine = (function(global) {
         'images/water-block.png',
         'images/grass-block.png',
         'images/enemy-bug.png',
+        'images/enemy-bug-reversed.png',
         'images/char-princess-girl.png',
         'images/char-cat-girl.png',
         'images/char-horn-girl.png',
