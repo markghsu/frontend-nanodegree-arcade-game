@@ -24,107 +24,6 @@ var gameState = {
 	allPowerups:[]
 };
 
-/** @const PLAYERDEFAULT - defines default values for player entity */
-var PLAYERDEFAULT = {
-	offx: 20,
-	offy: 65,
-	speed: 30,
-	width: 65,
-	height: 85
-};
-
-/** @const ENEMYDEFAULT - defines default values for enemies */
-var ENEMYDEFAULT = {
-	offx: 0,
-	offy: 0,
-	speed: 100,
-	width: 100,
-	height: 65
-};
-
-
-/**
- * @global
- * @description placement of enemies/powerups for each level.
- * @todo Add more functionality: roadblocks, keys, etc.
- */
-var levels = [
-	{
-		enemies: [
-			{x:100,y:200,speed:100},
-			{x:200,y:375,speed:-20},
-			{x:0,y:170,speed:180}
-		],
-		powerups: [
-			{type: 0, x: 100, y: 250}
-		],
-		other: [
-		]
-	},
-	{
-		enemies: [
-			{x:100,y:360,speed:100},
-			{x:300,y:300,speed:70},
-			{x:0,y:130,speed:180},
-			{x:200,y:300,speed:130},
-			{x:20,y:130,speed:150}
-		],
-		powerups: [
-			{type: 0, x: 100, y: 300},
-			{type: 2, x: 310, y: 90}
-		],
-		other: [
-		]
-	}
-];
-
-var powerupTypes = [
-	{
-		sprite:'images/Gem Blue.png',
-		offx: 5,
-		offy: 65,
-		width: 95,
-		height: 100,
-		life: 0,
-		point: 1
-	},
-	{
-		sprite:'images/Gem Green.png',
-		offx: 5,
-		offy: 65,
-		width: 95,
-		height: 100,
-		life: 0,
-		point: 2
-	},
-	{
-		sprite:'images/Gem Orange.png',
-		offx: 5,
-		offy: 65,
-		width: 95,
-		height: 100,
-		life: 0,
-		point: 3
-	},
-	{
-		sprite:'images/Heart.png',
-		offx: 5,
-		offy: 50,
-		width: 85,
-		height: 85,
-		life: 1,
-		point: 0
-	},
-	{
-		sprite:'images/Key.png',
-		offx: 30,
-		offy: 60,
-		width: 40,
-		height: 80,
-		life: 3,
-		point: 2
-	}
-];
 
 /**
  * @description Represents any entity/character that is rendered on screen.
@@ -244,12 +143,12 @@ Player.prototype.constructor = Player;
 Player.prototype.update = function() {
 	//every tick, check collisions
 	for(var i = 0; i < gameState.allEnemies.length; i++) {
-		if(intersects(this, gameState.allEnemies[i])) {
+		if(this.intersects(gameState.allEnemies[i])) {
 			this.die();
 		}
 	}
 	for(i = 0; i < gameState.allPowerups.length; i++) {
-		if(intersects(this, gameState.allPowerups[i])) {
+		if(this.intersects(gameState.allPowerups[i])) {
 			gameState.points += gameState.allPowerups[i].pointVal;
 			gameState.lives += gameState.allPowerups[i].lifeVal;
 			gameState.allPowerups.splice(i,1);
@@ -285,6 +184,15 @@ Player.prototype.win = function() {
 	gameState.level++;
 	initLevel(gameState.level);
 };
+
+/**
+ * @method Checks if player intersects with other entity. Based on x, y, offsets of x/y, width, height.
+ * @todo Implement checking based on entity shape
+ * @param {Entity} ent - entity to check
+ */
+Player.prototype.intersects = function (ent) {
+	return ((this.x + this.offx < ent.x + ent.offx) && (this.x + this.offx + this.width > ent.x + ent.offx) || (this.x + this.offx >= ent.x + ent.offx) && (ent.x + ent.offx + ent.width > this.x + this.offx)) && ((this.y + this.offy < ent.y + ent.offy) && (this.y + this.offy + this.height > ent.y + ent.offy) || (this.y + this.offy >= ent.y + ent.offy) && (ent.y + ent.offy + ent.height > this.y + this.offy));
+}
 
 /**
  * @method Exit the game. Display final scores.
@@ -339,16 +247,6 @@ Player.prototype.handleInput = function(inp) {
 };
 
 /**
- * @method Checks if two entities intersect. Based on x, y, offsets of x/y, width, height.
- * @todo Implement checking based on entity shape
- * @param {Entity} a - first entity
- * @param {Entity} b - second entity
- */
-function intersects (a, b) {
-	return ((a.x + a.offx < b.x + b.offx) && (a.x + a.offx + a.width > b.x + b.offx) || (a.x + a.offx >= b.x + b.offx) && (b.x + b.offx + b.width > a.x + a.offx)) && ((a.y + a.offy < b.y + b.offy) && (a.y + a.offy + a.height > b.y + b.offy) || (a.y + a.offy >= b.y + b.offy) && (b.y + b.offy + b.height > a.y + a.offy));
-}
-
-/**
  * @method Initialize a level
  * @param {Number} num - level to initialize.
  * @description loads levels as defined in levels global array. If the level is not in the levels array, load num enemies randomly.
@@ -370,20 +268,23 @@ function initLevel(num) {
 	}
 	else {
 		for(var j = 0; j < levels[num].enemies.length; j++) {
-			gameState.allEnemies.push(new Enemy(levels[num].enemies[j].x,levels[num].enemies[j].y, levels[num].enemies[j].speed));
+			var enm = levels[num].enemies[j];
+			gameState.allEnemies.push(new Enemy(enm.x, enm.y, enm.speed));
 		}
 		for(var k = 0; k < levels[num].powerups.length; k++) {
+			var pup = levels[num].powerups[k];
+			var ptype = powerupTypes[pup.type];
 			gameState.allPowerups.push(
 				new Powerup(
-					powerupTypes[levels[num].powerups[k].type].sprite,
-					levels[num].powerups[k].x,
-					levels[num].powerups[k].y,
-					powerupTypes[levels[num].powerups[k].type].offx,
-					powerupTypes[levels[num].powerups[k].type].offy,
-					powerupTypes[levels[num].powerups[k].type].width,
-					powerupTypes[levels[num].powerups[k].type].height,
-					powerupTypes[levels[num].powerups[k].type].point,
-					powerupTypes[levels[num].powerups[k].type].life
+					ptype.sprite,
+					pup.x,
+					pup.y,
+					ptype.offx,
+					ptype.offy,
+					ptype.width,
+					ptype.height,
+					ptype.point,
+					ptype.life
 				));
 		}
 	}
