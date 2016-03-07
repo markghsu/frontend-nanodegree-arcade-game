@@ -3,7 +3,7 @@
 This game is a clone of the popular "Frogger" arcade game. In it, the player will try to move across the screen from the green grass to the water, while avoiding enemy bugs and collecting powerups.
 
 ##Starting the game
-In order to start this game, open the "index.html" file in a web browser. The game is also hosted at http://www.bitballoon.com/blahblah
+In order to start this game, open the "index.html" file in a web browser. The game is also hosted at http://importer-hilda-35724.bitballoon.com/
 
 ##Gameplay
 The user will first select a character by using the arrow keys. Once a character is selected, the level will load. The player will move the character around using arrow keys. Every time the player hits a bug, they will lose one life. Everytime they reach the water at the top of the screen, they will gain 10 points.

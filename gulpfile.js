@@ -11,7 +11,7 @@ gulp.task('process-images', function() {
 		.pipe(gulp.dest('build/images'))
 });
 gulp.task('process-scripts', function() {
-	return gulp.src('js/*.js')
+	return gulp.src(['./js/resources.js','./js/config.json','./js/app.js','./js/engine.js'])
 		.pipe(lint())
 		.pipe(lint.reporter())
 		.pipe(concat('main.js'))
