@@ -1,10 +1,10 @@
 /** @const PLAYERDEFAULT - defines default values for player entity */
 var PLAYERDEFAULT = {
-	offx: 20,
-	offy: 65,
+	offx: 25,
+	offy: 75,
 	speed: 30,
-	width: 65,
-	height: 85
+	width: 55,
+	height: 75
 };
 
 /** @const ENEMYDEFAULT - defines default values for enemies */

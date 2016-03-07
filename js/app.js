@@ -191,8 +191,11 @@ Player.prototype.win = function() {
  * @param {Entity} ent - entity to check
  */
 Player.prototype.intersects = function (ent) {
-	return ((this.x + this.offx < ent.x + ent.offx) && (this.x + this.offx + this.width > ent.x + ent.offx) || (this.x + this.offx >= ent.x + ent.offx) && (ent.x + ent.offx + ent.width > this.x + this.offx)) && ((this.y + this.offy < ent.y + ent.offy) && (this.y + this.offy + this.height > ent.y + ent.offy) || (this.y + this.offy >= ent.y + ent.offy) && (ent.y + ent.offy + ent.height > this.y + this.offy));
-}
+	return ((this.x + this.offx < ent.x + ent.offx) && (this.x + this.offx + this.width > ent.x + ent.offx) ||
+		(this.x + this.offx >= ent.x + ent.offx) && (ent.x + ent.offx + ent.width > this.x + this.offx)) &&
+	((this.y + this.offy < ent.y + ent.offy) && (this.y + this.offy + this.height > ent.y + ent.offy) ||
+		(this.y + this.offy >= ent.y + ent.offy) && (ent.y + ent.offy + ent.height > this.y + this.offy));
+};
 
 /**
  * @method Exit the game. Display final scores.
